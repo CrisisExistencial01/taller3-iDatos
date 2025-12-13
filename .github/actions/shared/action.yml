@@ -2,12 +2,8 @@ name: 'Shared Setup'
 description: 'Node.js setup, caching y vercel CLI para Next.js'
 inputs:
   node-version:
-    description: 'Node version'
-    required: false
     default: '20'
   cache-key:
-    description: 'Cache key suffix'
-    required: false
     default: ''
 runs:
   using: 'composite'
