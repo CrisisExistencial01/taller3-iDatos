@@ -8,28 +8,29 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.node-version }}
-        
-    - name: Cache Next.js
-      uses: actions/cache@v4
-      with:
-        path: |
-          .next/cache
-          node_modules/.cache/turbo
-          **/node_modules/.cache
-        key: ${{ runner.os }}-next-${{ inputs.cache-key }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-next-${{ inputs.cache-key }}-
-          
-    - name: Install dependencies
-      shell: bash
-      run: |
-        corepack enable
-        npm ci --frozen-lockfile
-        
-    - name: Install Vercel CLI
-      shell: bash
-      run: npm i -g vercel@latest
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: ${{ inputs.node-version }}
+
+  - name: Setup Bun
+    uses: oven-sh/setup-bun@v2
+    with:
+      bun-version: latest
+
+  - name: Cache .bun-install
+    uses: actions/cache@v4
+    with:
+      path: |
+        .bun-install/cache
+        .next/cache
+      key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+      restore-keys: ${{ runner.os }}-bun-
+
+  - name: Install dependencies
+    shell: bash
+    run: bun install
+
+  - name: Install Vercel CLI
+    shell: bash
+    run: npm i -g vercel@latest
