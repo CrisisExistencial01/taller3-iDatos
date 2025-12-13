@@ -1,10 +1,7 @@
-name: Preview Deploy
-on:
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches:
-        - develop
+name: 'Production Deploy'
+on: 
+    push:
+        branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,11 +20,10 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
-          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
           vercel build --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Deploy Preview
+      - name: Deploy Production
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
-        if: github.ref != 'refs/heads/main'
+        run: vercel deploy --prebuild --prod --token=${{ secrets.VERCEL_TOKEN }}
