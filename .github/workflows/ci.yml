@@ -4,14 +4,12 @@ jobs:
     lint:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
-            - uses: ./.github/actions/shared.yml
+            - uses: ./.github/actions/shared
             - run: npm run lint
     test:
         needs: lint
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
-            - uses: ./.github/actions/shared.yml
+            - uses: ./.github/actions/shared
             - run: npm test
             - run: npm run build

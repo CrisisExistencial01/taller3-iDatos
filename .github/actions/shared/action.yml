@@ -4,7 +4,7 @@ inputs:
   node-version:
     description: 'Node version'
     required: false
-    default: '22'
+    default: '20'
   cache-key:
     description: 'Cache key suffix'
     required: false
