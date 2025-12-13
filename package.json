@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest",
+    "test-ui": "vitest --ui"
   },
   "dependencies": {
+    "vitest": "^4.0.15",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.87.1",
     "clsx": "^2.1.1",
@@ -30,4 +33,3 @@
     "typescript": "^5"
   }
 }
-
