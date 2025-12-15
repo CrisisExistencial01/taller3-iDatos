@@ -51,6 +51,8 @@ Ejemplo de visualizaciones incluidas en el proyecto:
 
 De manera consistente, variables como **PIB per cápita**, **apoyo social** y **esperanza de vida saludable** aparecen entre las más correlacionadas con los niveles de felicidad reportados.
 
+Para más detalles sobre el análisis, se puede consultar el archivo en el repositorio de GitLab: https://gitlab.com/universidad3163351/iDatos/idatos-eda
+
 ---
 
 ## 📈 Resultados principales

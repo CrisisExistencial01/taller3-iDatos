@@ -10,7 +10,7 @@ const navItems = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Power BI Reports', href: '/dashboard/reports', icon: Presentation },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    { name: 'About this project', href: '/dashboard/about', icon: Settings },
 ]
 
 export function Sidebar() {
