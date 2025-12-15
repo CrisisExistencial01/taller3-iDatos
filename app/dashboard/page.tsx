@@ -26,6 +26,7 @@ export default function DashboardPage() {
     const [availableYears, setAvailableYears] = React.useState<number[]>([])
     const [selectedYear, setSelectedYear] = React.useState<number | null>(null)
     const [selectedYearTop5, setSelectedYearTop5] = React.useState<number | null>(2024)
+    const [selectedYearStats, setSelectedYearStats] = React.useState<number | null>(2024)
     const [loading, setLoading] = React.useState(true)
     const powerbiEmbedUrl = "https://app.powerbi.com/view?r=eyJrIjoiOWYwZDRkNjMtODVmZi00ODJkLTk0NmItYzcyOTYzNTkwOTZhIiwidCI6ImZjZDlhYmQ4LWRmY2QtNGExYS1iNzE5LThhMTNhY2ZkNWVkOSIsImMiOjR9";
 
@@ -65,12 +66,17 @@ export default function DashboardPage() {
                         .sort((a, b) => b - a) // Sort descending
                     setAvailableYears(years)
 
-                    // Calculate stats
-                    const uniqueCountries = new Set(allData.map(d => d.country)).size
-                    const uniqueRegions = new Set(allData.filter(d => d.regional_indicator).map(d => d.regional_indicator)).size
-                    const scores = allData.map(d => parseFloat(d.happiness_score?.toString() || '0'))
-                    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length
-                    const maxScore = Math.max(...scores)
+                    // Filter data by selected year for stats
+                    const yearData = selectedYearStats
+                        ? allData.filter(d => d.year === selectedYearStats)
+                        : allData
+
+                    // Calculate stats for the selected year
+                    const uniqueCountries = new Set(yearData.map(d => d.country)).size
+                    const uniqueRegions = new Set(yearData.filter(d => d.regional_indicator).map(d => d.regional_indicator)).size
+                    const scores = yearData.map(d => parseFloat(d.happiness_score?.toString() || '0'))
+                    const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
+                    const maxScore = scores.length > 0 ? Math.max(...scores) : 0
 
                     setStats({
                         totalCountries: uniqueCountries,
@@ -91,7 +97,8 @@ export default function DashboardPage() {
         }
 
         fetchStats()
-    }, [])
+    }, [selectedYearStats, selectedYearTop5])
+
 
     // Update top 5 countries when selected year changes
     React.useEffect(() => {
@@ -133,14 +140,15 @@ export default function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="btn-primary inline-flex items-center justify-center rounded-xl text-sm font-semibold h-11 px-6 gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Download Report
-                    </button>
+                    <YearSelector
+                        selectedYear={selectedYearStats}
+                        years={availableYears}
+                        onYearChange={setSelectedYearStats}
+                        loading={loading}
+                    />
                 </div>
             </div>
+
 
             {/* Metrics Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
