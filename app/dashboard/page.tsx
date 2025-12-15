@@ -3,6 +3,7 @@
 import React from "react"
 import { Globe, TrendingUp, MapPin, Award } from "lucide-react"
 import { DashboardChart } from "@/components/DashboardChart"
+import { YearSelector } from "@/components/YearSelector"
 import { PowerBIEmbed } from "@/components/PowerBIEmbed"
 import { createClient } from "@/utils/supabase/client"
 import clsx from "clsx"
@@ -22,6 +23,8 @@ export default function DashboardPage() {
         topScore: 0,
     })
     const [topCountries, setTopCountries] = React.useState<any[]>([])
+    const [availableYears, setAvailableYears] = React.useState<number[]>([])
+    const [selectedYear, setSelectedYear] = React.useState<number | null>(null)
     const [loading, setLoading] = React.useState(true)
     const powerbiEmbedUrl = "https://app.powerbi.com/view?r=eyJrIjoiOWYwZDRkNjMtODVmZi00ODJkLTk0NmItYzcyOTYzNTkwOTZhIiwidCI6ImZjZDlhYmQ4LWRmY2QtNGExYS1iNzE5LThhMTNhY2ZkNWVkOSIsImMiOjR9";
 
@@ -33,7 +36,7 @@ export default function DashboardPage() {
                 // Fetch all data
                 const { data: allData, error } = await supabase
                     .from('world_happiness')
-                    .select('country, happiness_score, regional_indicator')
+                    .select('country, happiness_score, regional_indicator, year')
 
                 if (error) {
                     console.error('Error fetching data:', error)
@@ -42,6 +45,12 @@ export default function DashboardPage() {
                 }
 
                 if (allData && allData.length > 0) {
+                    // Extract unique years
+                    const years = Array.from(new Set(allData.map(d => d.year)))
+                        .filter(year => year !== null && year !== undefined)
+                        .sort((a, b) => b - a) // Sort descending
+                    setAvailableYears(years)
+
                     // Calculate stats
                     const uniqueCountries = new Set(allData.map(d => d.country)).size
                     const uniqueRegions = new Set(allData.filter(d => d.regional_indicator).map(d => d.regional_indicator)).size
@@ -138,13 +147,19 @@ export default function DashboardPage() {
                 <div className="col-span-1 lg:col-span-4 rounded-2xl glass card-hover p-6 relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-cyan-600/0 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative z-10">
-                        <div className="mb-6 flex items-center justify-between">
+                        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
                             <div>
                                 <h3 className="font-bold text-slate-100 text-xl mb-1">Top Countries by Happiness Score</h3>
                                 <p className="text-xs text-slate-500">Ranked by overall happiness metrics</p>
                             </div>
+                            <YearSelector
+                                selectedYear={selectedYear}
+                                years={availableYears}
+                                onYearChange={setSelectedYear}
+                                loading={loading}
+                            />
                         </div>
-                        <DashboardChart />
+                        <DashboardChart selectedYear={selectedYear} />
                     </div>
                 </div>
 
