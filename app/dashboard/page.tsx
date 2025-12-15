@@ -5,8 +5,11 @@ import { Globe, TrendingUp, MapPin, Award } from "lucide-react"
 import { DashboardChart } from "@/components/DashboardChart"
 import { YearSelector } from "@/components/YearSelector"
 import { PowerBIEmbed } from "@/components/PowerBIEmbed"
+import { StatsCard } from "@/components/ui/StatsCard"
+import { SectionHeader } from "@/components/ui/SectionHeader"
+import { CountryRankItem } from "@/components/ui/CountryRankItem"
+import { GlassCard } from "@/components/ui/GlassCard"
 import { createClient } from "@/utils/supabase/client"
-import clsx from "clsx"
 
 interface DashboardStats {
     totalCountries: number
@@ -24,7 +27,7 @@ export default function DashboardPage() {
     })
     const [topCountries, setTopCountries] = React.useState<any[]>([])
     const [availableYears, setAvailableYears] = React.useState<number[]>([])
-    const [selectedYear, setSelectedYear] = React.useState<number | null>(null)
+    const [selectedYear, setSelectedYear] = React.useState<number | null>(2024)
     const [selectedYearTop5, setSelectedYearTop5] = React.useState<number | null>(2024)
     const [selectedYearStats, setSelectedYearStats] = React.useState<number | null>(2024)
     const [loading, setLoading] = React.useState(true)
@@ -152,120 +155,83 @@ export default function DashboardPage() {
 
             {/* Metrics Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card
+                <StatsCard
                     title="Total Countries"
                     value={loading ? "..." : stats.totalCountries.toString()}
-                    change=""
                     icon={Globe}
                     loading={loading}
                 />
-                <Card
+                <StatsCard
                     title="Avg Happiness Score"
                     value={loading ? "..." : stats.avgHappinessScore.toFixed(2)}
-                    change=""
                     icon={TrendingUp}
                     loading={loading}
                 />
-                <Card
+                <StatsCard
                     title="Regions Tracked"
                     value={loading ? "..." : stats.totalRegions.toString()}
-                    change=""
                     icon={MapPin}
                     loading={loading}
                 />
-                <Card
+                <StatsCard
                     title="Highest Score"
                     value={loading ? "..." : stats.topScore.toFixed(2)}
-                    change=""
                     icon={Award}
                     loading={loading}
                 />
             </div>
 
+
             {/* Main Content Grid */}
             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-7">
                 {/* Chart Section */}
-                <div className="col-span-1 lg:col-span-4 rounded-2xl glass card-hover p-6 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-cyan-600/0 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="relative z-10">
-                        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-                            <div>
-                                <h3 className="font-bold text-slate-100 text-xl mb-1">Top Countries by Happiness Score</h3>
-                                <p className="text-xs text-slate-500">Ranked by overall happiness metrics</p>
-                            </div>
-                            <YearSelector
-                                selectedYear={selectedYear}
-                                years={availableYears}
-                                onYearChange={setSelectedYear}
-                                loading={loading}
-                            />
-                        </div>
-                        <DashboardChart selectedYear={selectedYear} />
-                    </div>
-                </div>
+                <GlassCard className="col-span-1 lg:col-span-4" hoverGradient="blue">
+                    <SectionHeader
+                        title="Top Countries by Happiness Score"
+                        description="Ranked by overall happiness metrics"
+                        selectedYear={selectedYear}
+                        availableYears={availableYears}
+                        onYearChange={setSelectedYear}
+                        loading={loading}
+                        showYearSelector
+                    />
+                    <DashboardChart selectedYear={selectedYear} />
+                </GlassCard>
 
                 {/* Top Countries List */}
-                <div className="col-span-1 lg:col-span-3 rounded-2xl glass card-hover p-6 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/0 via-cyan-600/0 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="relative z-10">
-                        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-                            <div>
-                                <h3 className="font-bold text-slate-100 text-xl mb-1">Top 5 Happiest Countries</h3>
-                                <p className="text-xs text-slate-500">Leading nations in global happiness</p>
+                <GlassCard className="col-span-1 lg:col-span-3" hoverGradient="emerald">
+                    <SectionHeader
+                        title="Top 5 Happiest Countries"
+                        description="Leading nations in global happiness"
+                        selectedYear={selectedYearTop5}
+                        availableYears={availableYears}
+                        onYearChange={setSelectedYearTop5}
+                        loading={loading}
+                        showYearSelector
+                    />
+                    <div className="space-y-3">
+                        {loading ? (
+                            <div className="space-y-3">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="h-16 shimmer rounded-lg" />
+                                ))}
                             </div>
-                            <YearSelector
-                                selectedYear={selectedYearTop5}
-                                years={availableYears}
-                                onYearChange={setSelectedYearTop5}
-                                loading={loading}
-                            />
-                        </div>
-                        <div className="space-y-3">
-                            {loading ? (
-                                <div className="space-y-3">
-                                    {[...Array(5)].map((_, i) => (
-                                        <div key={i} className="h-16 shimmer rounded-lg" />
-                                    ))}
-                                </div>
-                            ) : topCountries.length > 0 ? (
-                                topCountries.map((item, index) => (
-                                    <div
-                                        key={item.rank}
-                                        className="flex items-center justify-between p-4 rounded-xl border border-slate-800/60 bg-gradient-to-r from-slate-800/30 to-slate-900/30 hover:from-slate-800/50 hover:to-slate-900/50 hover:border-slate-700/60 transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden animate-slide-in-up"
-                                        style={{ animationDelay: `${index * 100}ms` }}
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-cyan-500/0 to-blue-500/0 group-hover:from-emerald-500/5 group-hover:via-cyan-500/5 group-hover:to-blue-500/5 transition-all duration-300"></div>
-                                        <div className="flex items-center gap-4 relative z-10">
-                                            <div className={clsx(
-                                                "h-12 w-12 rounded-xl flex items-center justify-center font-extrabold text-base transition-all duration-300 group-hover:scale-110 shadow-lg",
-                                                item.rank === 1
-                                                    ? "bg-gradient-to-br from-yellow-500/30 to-yellow-600/30 text-yellow-300 border-2 border-yellow-500/40 glow-blue"
-                                                    : item.rank === 2
-                                                        ? "bg-gradient-to-br from-slate-400/30 to-slate-500/30 text-slate-200 border-2 border-slate-500/40"
-                                                        : item.rank === 3
-                                                            ? "bg-gradient-to-br from-amber-600/30 to-amber-700/30 text-amber-300 border-2 border-amber-600/40"
-                                                            : "bg-slate-800/60 text-slate-400 border-2 border-slate-700/60"
-                                            )}>
-                                                {item.rank}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-100 group-hover:text-white transition-colors">{item.country}</p>
-                                                <p className="text-xs text-slate-500 mt-0.5">{item.region}</p>
-                                            </div>
-                                        </div>
-                                        <div className="relative z-10">
-                                            <div className="font-extrabold text-emerald-400 text-xl group-hover:text-emerald-300 transition-colors drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">
-                                                {item.score.toFixed(2)}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-slate-400 text-center py-8">No data available</p>
-                            )}
-                        </div>
+                        ) : topCountries.length > 0 ? (
+                            topCountries.map((item, index) => (
+                                <CountryRankItem
+                                    key={item.rank}
+                                    rank={item.rank}
+                                    country={item.country}
+                                    region={item.region}
+                                    score={item.score}
+                                    index={index}
+                                />
+                            ))
+                        ) : (
+                            <p className="text-slate-400 text-center py-8">No data available</p>
+                        )}
                     </div>
-                </div>
+                </GlassCard>
             </div>
 
             {/* Power BI Section */}
@@ -278,48 +244,3 @@ export default function DashboardPage() {
         </div>
     )
 }
-
-interface CardProps {
-    title: string
-    value: string
-    change: string
-    icon: React.ElementType
-    loading?: boolean
-}
-
-function Card({ title, value, change, icon: Icon, loading = false }: CardProps) {
-    return (
-        <div className="rounded-2xl glass card-hover p-6 group relative overflow-hidden">
-            {/* Gradient overlay on hover */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-cyan-600/0 to-emerald-600/0 group-hover:from-blue-600/5 group-hover:via-cyan-600/5 group-hover:to-emerald-600/5 transition-all duration-500"></div>
-
-            <div className="relative z-10">
-                <div className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <h3 className="tracking-tight text-xs font-semibold uppercase text-slate-500 group-hover:text-slate-400 transition-colors letter-spacing-wide">
-                        {title}
-                    </h3>
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-slate-800/60 to-slate-900/60 group-hover:from-blue-600/20 group-hover:to-cyan-600/20 border border-slate-700/50 group-hover:border-blue-500/30 transition-all duration-300 group-hover:scale-110">
-                        <Icon className="h-5 w-5 text-slate-400 group-hover:text-blue-400 transition-colors duration-300" />
-                    </div>
-                </div>
-                <div>
-                    {loading ? (
-                        <div className="h-10 w-32 shimmer rounded-lg mb-2" />
-                    ) : (
-                        <div className="text-4xl font-extrabold bg-gradient-to-r from-white via-slate-100 to-slate-200 bg-clip-text text-transparent group-hover:from-blue-300 group-hover:via-cyan-300 group-hover:to-blue-300 transition-all duration-500 leading-none mb-1">
-                            {value}
-                        </div>
-                    )}
-                    {change && (
-                        <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 font-medium border border-emerald-500/20">
-                                {change}
-                            </span>
-                        </p>
-                    )}
-                </div>
-            </div>
-        </div>
-    )
-}
-
