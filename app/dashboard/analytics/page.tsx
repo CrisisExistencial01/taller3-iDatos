@@ -7,6 +7,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader"
 import { DownloadReportButton } from "@/components/ui/DownloadReportButton"
 import { createClient } from "@/utils/supabase/client"
 import { usePDFExport } from "@/hooks/usePDFExport"
+import { generateConclusions } from "@/app/actions/gemini"
 import React from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { Sparkles, Info, HelpCircle, ShieldAlert } from "lucide-react"
@@ -24,12 +25,39 @@ export default function AnalyticsPage() {
     const [conclusions, setConclusions] = React.useState("")
     const [isAiLoading, setIsAiLoading] = React.useState(false)
 
-    const handleGenerateConclusions = () => {
+    const handleGenerateConclusions = async () => {
         setIsAiLoading(true)
-        setTimeout(() => {
-            setConclusions("Basado en el análisis de los datos de felicidad mundial (2015-2024), se observa una correlación positiva fuerte entre el PIB per cápita y el puntaje de felicidad. Los países nórdicos (Finlandia, Dinamarca, Islandia) mantienen consistentemente las posiciones más altas, demostrando la eficacia de sus modelos de bienestar social. El apoyo social emerge como un factor crítico para la resiliencia en tiempos de crisis, como se evidenció durante la pandemia. Las regiones con mayores índices de percepción de corrupción tienden a mostrar niveles de felicidad significativamente menores.")
+        try {
+            // Prepare context data from the state
+            const yearlySummary = yearlyData
+                .map(d => `${d.year}: ${d.avgScore.toFixed(2)}`)
+                .join(', ')
+
+            const topRegions = regionalData
+                .slice(0, 3)
+                .map(d => `${d.region} (${d.avgScore.toFixed(2)})`)
+                .join(', ')
+
+            const bottomRegions = regionalData
+                .slice(-3)
+                .reverse()
+                .map(d => `${d.region} (${d.avgScore.toFixed(2)})`)
+                .join(', ')
+
+            const context = `
+            Tendencia anual (Año: Puntaje Promedio): ${yearlySummary}
+            Top 3 Regiones más felices: ${topRegions}
+            Regiones con menor puntaje: ${bottomRegions}
+            `
+
+            const aiConclusion = await generateConclusions(context)
+            setConclusions(aiConclusion)
+        } catch (error) {
+            console.error("Error calling AI:", error)
+            setConclusions("No se pudo generar el análisis en este momento. Por favor verifica tu conexión o la configuración de la API Key.")
+        } finally {
             setIsAiLoading(false)
-        }, 1500)
+        }
     }
 
     const handleDownloadReport = async () => {
