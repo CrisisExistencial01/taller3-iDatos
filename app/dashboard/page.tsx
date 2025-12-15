@@ -25,8 +25,22 @@ export default function DashboardPage() {
     const [topCountries, setTopCountries] = React.useState<any[]>([])
     const [availableYears, setAvailableYears] = React.useState<number[]>([])
     const [selectedYear, setSelectedYear] = React.useState<number | null>(null)
+    const [selectedYearTop5, setSelectedYearTop5] = React.useState<number | null>(2024)
     const [loading, setLoading] = React.useState(true)
     const powerbiEmbedUrl = "https://app.powerbi.com/view?r=eyJrIjoiOWYwZDRkNjMtODVmZi00ODJkLTk0NmItYzcyOTYzNTkwOTZhIiwidCI6ImZjZDlhYmQ4LWRmY2QtNGExYS1iNzE5LThhMTNhY2ZkNWVkOSIsImMiOjR9";
+
+    const top5CountriesByYear = (allData: any[], year: number | null) => {
+        if (!year) return []
+        return allData.filter(country => country.year === year)
+            .sort((a, b) => parseFloat(b.happiness_score?.toString() || '0') - parseFloat(a.happiness_score?.toString() || '0'))
+            .slice(0, 5)
+            .map((item, idx) => ({
+                rank: idx + 1,
+                country: item.country,
+                score: parseFloat(item.happiness_score?.toString() || '0'),
+                region: item.regional_indicator || 'N/A',
+            }))
+    }
 
     React.useEffect(() => {
         const fetchStats = async () => {
@@ -65,17 +79,8 @@ export default function DashboardPage() {
                         topScore: maxScore,
                     })
 
-                    // Get top 5 countries
-                    const top5 = allData
-                        .sort((a, b) => parseFloat(b.happiness_score?.toString() || '0') - parseFloat(a.happiness_score?.toString() || '0'))
-                        .slice(0, 5)
-                        .map((item, idx) => ({
-                            rank: idx + 1,
-                            country: item.country,
-                            score: parseFloat(item.happiness_score?.toString() || '0'),
-                            region: item.regional_indicator || 'N/A',
-                        }))
-
+                    // Get top 5 countries for initial year
+                    const top5 = top5CountriesByYear(allData, selectedYearTop5)
                     setTopCountries(top5)
                 }
                 setLoading(false)
@@ -87,6 +92,34 @@ export default function DashboardPage() {
 
         fetchStats()
     }, [])
+
+    // Update top 5 countries when selected year changes
+    React.useEffect(() => {
+        const fetchTop5 = async () => {
+            try {
+                const supabase = createClient()
+                const { data: allData, error } = await supabase
+                    .from('world_happiness')
+                    .select('country, happiness_score, regional_indicator, year')
+
+                if (error) {
+                    console.error('Error fetching data:', error)
+                    return
+                }
+
+                if (allData && allData.length > 0) {
+                    const top5 = top5CountriesByYear(allData, selectedYearTop5)
+                    setTopCountries(top5)
+                }
+            } catch (err) {
+                console.error('Error:', err)
+            }
+        }
+
+        if (selectedYearTop5) {
+            fetchTop5()
+        }
+    }, [selectedYearTop5])
 
     return (
         <div className="space-y-8 animate-fade-in">
@@ -167,9 +200,17 @@ export default function DashboardPage() {
                 <div className="col-span-1 lg:col-span-3 rounded-2xl glass card-hover p-6 relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/0 via-cyan-600/0 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative z-10">
-                        <div className="mb-6">
-                            <h3 className="font-bold text-slate-100 text-xl mb-1">Top 5 Happiest Countries</h3>
-                            <p className="text-xs text-slate-500">Leading nations in global happiness</p>
+                        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                                <h3 className="font-bold text-slate-100 text-xl mb-1">Top 5 Happiest Countries</h3>
+                                <p className="text-xs text-slate-500">Leading nations in global happiness</p>
+                            </div>
+                            <YearSelector
+                                selectedYear={selectedYearTop5}
+                                years={availableYears}
+                                onYearChange={setSelectedYearTop5}
+                                loading={loading}
+                            />
                         </div>
                         <div className="space-y-3">
                             {loading ? (
