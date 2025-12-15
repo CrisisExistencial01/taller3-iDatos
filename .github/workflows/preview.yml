@@ -1,15 +1,6 @@
 name: Preview Deploy
 on:
   workflow_call:
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches:
-        - develop
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   deploy:

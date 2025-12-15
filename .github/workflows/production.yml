@@ -1,12 +1,6 @@
 name: 'Production Deploy'
 on: 
     workflow_call:
-    push:
-        branches: [main]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   deploy:
