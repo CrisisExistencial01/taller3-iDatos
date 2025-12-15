@@ -23,12 +23,13 @@ export default function DashboardPage() {
     })
     const [topCountries, setTopCountries] = React.useState<any[]>([])
     const [loading, setLoading] = React.useState(true)
+    const powerbiEmbedUrl = "https://app.powerbi.com/view?r=eyJrIjoiOWYwZDRkNjMtODVmZi00ODJkLTk0NmItYzcyOTYzNTkwOTZhIiwidCI6ImZjZDlhYmQ4LWRmY2QtNGExYS1iNzE5LThhMTNhY2ZkNWVkOSIsImMiOjR9";
 
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
                 const supabase = createClient()
-                
+
                 // Fetch all data
                 const { data: allData, error } = await supabase
                     .from('world_happiness')
@@ -101,31 +102,31 @@ export default function DashboardPage() {
 
             {/* Metrics Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card 
-                    title="Total Countries" 
-                    value={loading ? "..." : stats.totalCountries.toString()} 
-                    change="" 
+                <Card
+                    title="Total Countries"
+                    value={loading ? "..." : stats.totalCountries.toString()}
+                    change=""
                     icon={Globe}
                     loading={loading}
                 />
-                <Card 
-                    title="Avg Happiness Score" 
-                    value={loading ? "..." : stats.avgHappinessScore.toFixed(2)} 
-                    change="" 
+                <Card
+                    title="Avg Happiness Score"
+                    value={loading ? "..." : stats.avgHappinessScore.toFixed(2)}
+                    change=""
                     icon={TrendingUp}
                     loading={loading}
                 />
-                <Card 
-                    title="Regions Tracked" 
-                    value={loading ? "..." : stats.totalRegions.toString()} 
-                    change="" 
+                <Card
+                    title="Regions Tracked"
+                    value={loading ? "..." : stats.totalRegions.toString()}
+                    change=""
                     icon={MapPin}
                     loading={loading}
                 />
-                <Card 
-                    title="Highest Score" 
-                    value={loading ? "..." : stats.topScore.toFixed(2)} 
-                    change="" 
+                <Card
+                    title="Highest Score"
+                    value={loading ? "..." : stats.topScore.toFixed(2)}
+                    change=""
                     icon={Award}
                     loading={loading}
                 />
@@ -164,8 +165,8 @@ export default function DashboardPage() {
                                 </div>
                             ) : topCountries.length > 0 ? (
                                 topCountries.map((item, index) => (
-                                    <div 
-                                        key={item.rank} 
+                                    <div
+                                        key={item.rank}
                                         className="flex items-center justify-between p-4 rounded-xl border border-slate-800/60 bg-gradient-to-r from-slate-800/30 to-slate-900/30 hover:from-slate-800/50 hover:to-slate-900/50 hover:border-slate-700/60 transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden animate-slide-in-up"
                                         style={{ animationDelay: `${index * 100}ms` }}
                                     >
@@ -173,13 +174,13 @@ export default function DashboardPage() {
                                         <div className="flex items-center gap-4 relative z-10">
                                             <div className={clsx(
                                                 "h-12 w-12 rounded-xl flex items-center justify-center font-extrabold text-base transition-all duration-300 group-hover:scale-110 shadow-lg",
-                                                item.rank === 1 
+                                                item.rank === 1
                                                     ? "bg-gradient-to-br from-yellow-500/30 to-yellow-600/30 text-yellow-300 border-2 border-yellow-500/40 glow-blue"
                                                     : item.rank === 2
-                                                    ? "bg-gradient-to-br from-slate-400/30 to-slate-500/30 text-slate-200 border-2 border-slate-500/40"
-                                                    : item.rank === 3
-                                                    ? "bg-gradient-to-br from-amber-600/30 to-amber-700/30 text-amber-300 border-2 border-amber-600/40"
-                                                    : "bg-slate-800/60 text-slate-400 border-2 border-slate-700/60"
+                                                        ? "bg-gradient-to-br from-slate-400/30 to-slate-500/30 text-slate-200 border-2 border-slate-500/40"
+                                                        : item.rank === 3
+                                                            ? "bg-gradient-to-br from-amber-600/30 to-amber-700/30 text-amber-300 border-2 border-amber-600/40"
+                                                            : "bg-slate-800/60 text-slate-400 border-2 border-slate-700/60"
                                             )}>
                                                 {item.rank}
                                             </div>
@@ -207,7 +208,7 @@ export default function DashboardPage() {
             <div className="rounded-2xl glass card-hover overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-cyan-600/0 to-emerald-600/0 hover:from-blue-600/5 hover:via-cyan-600/5 hover:to-emerald-600/5 transition-opacity duration-500"></div>
                 <div className="relative z-10">
-                    <PowerBIEmbed embedUrl="https://app.powerbi.com/view?r=eyJrIjoiMmE4ZGEwZGMtOWY0MS00NzY1LTg5YjAtNGRhZmRjY2ExZTI2IiwidCI6IjQ0ODdiNTJmLWYxMTgtNDg5Mi05YjMzLTY1NTQ1YzQ4NzE4NiIsImMiOjR9" />
+                    <PowerBIEmbed embedUrl={powerbiEmbedUrl} />
                 </div>
             </div>
         </div>
@@ -227,7 +228,7 @@ function Card({ title, value, change, icon: Icon, loading = false }: CardProps) 
         <div className="rounded-2xl glass card-hover p-6 group relative overflow-hidden">
             {/* Gradient overlay on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-cyan-600/0 to-emerald-600/0 group-hover:from-blue-600/5 group-hover:via-cyan-600/5 group-hover:to-emerald-600/5 transition-all duration-500"></div>
-            
+
             <div className="relative z-10">
                 <div className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <h3 className="tracking-tight text-xs font-semibold uppercase text-slate-500 group-hover:text-slate-400 transition-colors letter-spacing-wide">
