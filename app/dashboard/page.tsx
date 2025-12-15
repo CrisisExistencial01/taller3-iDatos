@@ -9,9 +9,7 @@ import { StatsCard } from "@/components/ui/StatsCard"
 import { SectionHeader } from "@/components/ui/SectionHeader"
 import { CountryRankItem } from "@/components/ui/CountryRankItem"
 import { GlassCard } from "@/components/ui/GlassCard"
-import { DownloadReportButton } from "@/components/ui/DownloadReportButton"
 import { createClient } from "@/utils/supabase/client"
-import { usePDFExport } from "@/hooks/usePDFExport"
 
 interface DashboardStats {
     totalCountries: number
@@ -35,13 +33,6 @@ export default function DashboardPage() {
     const [loading, setLoading] = React.useState(true)
     const powerbiEmbedUrl = "https://app.powerbi.com/view?r=eyJrIjoiOWYwZDRkNjMtODVmZi00ODJkLTk0NmItYzcyOTYzNTkwOTZhIiwidCI6ImZjZDlhYmQ4LWRmY2QtNGExYS1iNzE5LThhMTNhY2ZkNWVkOSIsImMiOjR9";
 
-    // PDF Export
-    const { exportToPDF, isExporting } = usePDFExport()
-
-    const handleDownloadReport = async () => {
-        const filename = `world-happiness-report-${selectedYearStats || 'all-years'}.pdf`
-        await exportToPDF('dashboard-content', { filename })
-    }
 
     const top5CountriesByYear = (allData: any[], year: number | null) => {
         if (!year) return []
@@ -158,11 +149,6 @@ export default function DashboardPage() {
                         years={availableYears}
                         onYearChange={setSelectedYearStats}
                         loading={loading}
-                    />
-                    <DownloadReportButton
-                        onClick={handleDownloadReport}
-                        isLoading={isExporting}
-                        disabled={loading}
                     />
                 </div>
             </div>
