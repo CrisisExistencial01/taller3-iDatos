@@ -15,7 +15,7 @@ export function usePDFExport() {
     const [error, setError] = useState<string | null>(null)
 
     const exportToPDF = async (
-        elementId: string,
+        elementIds: string | string[],
         options: ExportOptions = {}
     ) => {
         const {
@@ -28,34 +28,48 @@ export function usePDFExport() {
         setError(null)
 
         try {
-            const element = document.getElementById(elementId)
-            if (!element) {
-                throw new Error(`Element with id "${elementId}" not found`)
-            }
-
-            const dataUrl = await toPng(element, {
-                backgroundColor: '#0a0e1a',
-                quality: quality,
-                pixelRatio: 2,
-                cacheBust: true,
-                fontEmbedCSS: '',
-            })
-
-            const elementWidth = element.scrollWidth
-            const elementHeight = element.scrollHeight
-
-            const pdfWidth = format === 'a4' ? 210 : 216 // mm
-            const pdfHeight = (elementHeight * pdfWidth) / elementWidth
-
-            // Create PDF
+            const ids = Array.isArray(elementIds) ? elementIds : [elementIds]
             const pdf = new jsPDF({
-                orientation: pdfHeight > pdfWidth ? 'portrait' : 'landscape',
+                orientation: 'portrait',
                 unit: 'mm',
                 format: format,
             })
 
-            // Add image to PDF
-            pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight)
+            const pdfPageWidth = pdf.internal.pageSize.getWidth()
+            const pdfPageHeight = pdf.internal.pageSize.getHeight()
+
+            for (let i = 0; i < ids.length; i++) {
+                const elementId = ids[i]
+                const element = document.getElementById(elementId)
+                if (!element) {
+                    console.warn(`Element with id "${elementId}" not found`)
+                    continue
+                }
+
+                if (i > 0) {
+                    pdf.addPage()
+                }
+
+                // Add a small delay to ensure rendering stability
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const dataUrl = await toPng(element, {
+                    backgroundColor: '#0a0e1a', // Dark theme background
+                    quality: quality,
+                    pixelRatio: 2,
+                    cacheBust: true,
+                    fontEmbedCSS: '',
+                })
+
+                const elementWidth = element.scrollWidth
+                const elementHeight = element.scrollHeight
+
+                // Calculate scale to fit width (with some margin if desired, currently full width)
+                const scale = pdfPageWidth / elementWidth
+                const scaledHeight = elementHeight * scale
+
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfPageWidth, scaledHeight)
+            }
 
             // Add metadata
             pdf.setProperties({
