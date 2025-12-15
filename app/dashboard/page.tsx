@@ -153,98 +153,95 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Dashboard Content - Wrapped for PDF Export */}
-            <div id="dashboard-content">
+            {/* Metrics Grid */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatsCard
+                    title="Total Countries"
+                    value={loading ? "..." : stats.totalCountries.toString()}
+                    icon={Globe}
+                    loading={loading}
+                />
+                <StatsCard
+                    title="Avg Happiness Score"
+                    value={loading ? "..." : stats.avgHappinessScore.toFixed(2)}
+                    icon={TrendingUp}
+                    loading={loading}
+                />
+                <StatsCard
+                    title="Regions Tracked"
+                    value={loading ? "..." : stats.totalRegions.toString()}
+                    icon={MapPin}
+                    loading={loading}
+                />
+                <StatsCard
+                    title="Highest Score"
+                    value={loading ? "..." : stats.topScore.toFixed(2)}
+                    icon={Award}
+                    loading={loading}
+                />
+            </div>
 
-                {/* Metrics Grid */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <StatsCard
-                        title="Total Countries"
-                        value={loading ? "..." : stats.totalCountries.toString()}
-                        icon={Globe}
+
+            {/* Main Content Grid */}
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-7">
+                {/* Chart Section */}
+                <GlassCard className="col-span-1 lg:col-span-4" hoverGradient="blue">
+                    <SectionHeader
+                        title="Top Countries by Happiness Score"
+                        description="Ranked by overall happiness metrics"
+                        selectedYear={selectedYear}
+                        availableYears={availableYears}
+                        onYearChange={setSelectedYear}
                         loading={loading}
+                        showYearSelector
                     />
-                    <StatsCard
-                        title="Avg Happiness Score"
-                        value={loading ? "..." : stats.avgHappinessScore.toFixed(2)}
-                        icon={TrendingUp}
+                    <DashboardChart selectedYear={selectedYear} />
+                </GlassCard>
+
+                {/* Top Countries List */}
+                <GlassCard className="col-span-1 lg:col-span-3" hoverGradient="emerald">
+                    <SectionHeader
+                        title="Top 5 Happiest Countries"
+                        description="Leading nations in global happiness"
+                        selectedYear={selectedYearTop5}
+                        availableYears={availableYears}
+                        onYearChange={setSelectedYearTop5}
                         loading={loading}
+                        showYearSelector
                     />
-                    <StatsCard
-                        title="Regions Tracked"
-                        value={loading ? "..." : stats.totalRegions.toString()}
-                        icon={MapPin}
-                        loading={loading}
-                    />
-                    <StatsCard
-                        title="Highest Score"
-                        value={loading ? "..." : stats.topScore.toFixed(2)}
-                        icon={Award}
-                        loading={loading}
-                    />
-                </div>
-
-
-                {/* Main Content Grid */}
-                <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-7">
-                    {/* Chart Section */}
-                    <GlassCard className="col-span-1 lg:col-span-4" hoverGradient="blue">
-                        <SectionHeader
-                            title="Top Countries by Happiness Score"
-                            description="Ranked by overall happiness metrics"
-                            selectedYear={selectedYear}
-                            availableYears={availableYears}
-                            onYearChange={setSelectedYear}
-                            loading={loading}
-                            showYearSelector
-                        />
-                        <DashboardChart selectedYear={selectedYear} />
-                    </GlassCard>
-
-                    {/* Top Countries List */}
-                    <GlassCard className="col-span-1 lg:col-span-3" hoverGradient="emerald">
-                        <SectionHeader
-                            title="Top 5 Happiest Countries"
-                            description="Leading nations in global happiness"
-                            selectedYear={selectedYearTop5}
-                            availableYears={availableYears}
-                            onYearChange={setSelectedYearTop5}
-                            loading={loading}
-                            showYearSelector
-                        />
-                        <div className="space-y-3">
-                            {loading ? (
-                                <div className="space-y-3">
-                                    {[...Array(5)].map((_, i) => (
-                                        <div key={i} className="h-16 shimmer rounded-lg" />
-                                    ))}
-                                </div>
-                            ) : topCountries.length > 0 ? (
-                                topCountries.map((item, index) => (
-                                    <CountryRankItem
-                                        key={item.rank}
-                                        rank={item.rank}
-                                        country={item.country}
-                                        region={item.region}
-                                        score={item.score}
-                                        index={index}
-                                    />
-                                ))
-                            ) : (
-                                <p className="text-slate-400 text-center py-8">No data available</p>
-                            )}
-                        </div>
-                    </GlassCard>
-                </div>
-
-                {/* Power BI Section */}
-                <div className="rounded-2xl glass card-hover overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-cyan-600/0 to-emerald-600/0 hover:from-blue-600/5 hover:via-cyan-600/5 hover:to-emerald-600/5 transition-opacity duration-500"></div>
-                    <div className="relative z-10">
-                        <PowerBIEmbed embedUrl={powerbiEmbedUrl} />
+                    <div className="space-y-3">
+                        {loading ? (
+                            <div className="space-y-3">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="h-16 shimmer rounded-lg" />
+                                ))}
+                            </div>
+                        ) : topCountries.length > 0 ? (
+                            topCountries.map((item, index) => (
+                                <CountryRankItem
+                                    key={item.rank}
+                                    rank={item.rank}
+                                    country={item.country}
+                                    region={item.region}
+                                    score={item.score}
+                                    index={index}
+                                />
+                            ))
+                        ) : (
+                            <p className="text-slate-400 text-center py-8">No data available</p>
+                        )}
                     </div>
+                </GlassCard>
+            </div>
+
+            {/* Power BI Section */}
+            <div className="rounded-2xl glass card-hover overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-cyan-600/0 to-emerald-600/0 hover:from-blue-600/5 hover:via-cyan-600/5 hover:to-emerald-600/5 transition-opacity duration-500"></div>
+                <div className="relative z-10">
+                    <PowerBIEmbed embedUrl={powerbiEmbedUrl} />
                 </div>
             </div>
+
         </div>
     )
 }
