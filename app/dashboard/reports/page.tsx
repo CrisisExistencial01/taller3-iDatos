@@ -1,6 +1,7 @@
 import { PowerBIEmbed } from "@/components/PowerBIEmbed"
 
 export default function ReportsPage() {
+    const powerBIEmbedUrl = "https://app.powerbi.com/view?r=eyJrIjoiOWYwZDRkNjMtODVmZi00ODJkLTk0NmItYzcyOTYzNTkwOTZhIiwidCI6ImZjZDlhYmQ4LWRmY2QtNGExYS1iNzE5LThhMTNhY2ZkNWVkOSIsImMiOjR9";
     return (
         <div className="space-y-8 animate-fade-in">
             <div className="space-y-2 pb-2">
@@ -11,7 +12,7 @@ export default function ReportsPage() {
                     Interactive reports and visualizations powered by Power BI. Explore comprehensive data insights and analytics.
                 </p>
             </div>
-            <PowerBIEmbed embedUrl="https://app.powerbi.com/view?r=eyJrIjoiMmE4ZGEwZGMtOWY0MS00NzY1LTg5YjAtNGRhZmRjY2ExZTI2IiwidCI6IjQ0ODdiNTJmLWYxMTgtNDg5Mi05YjMzLTY1NTQ1YzQ4NzE4NiIsImMiOjR9" />
+            <PowerBIEmbed embedUrl={powerBIEmbedUrl} />
         </div>
     )
 }

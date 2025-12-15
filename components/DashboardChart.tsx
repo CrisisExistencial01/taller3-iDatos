@@ -11,7 +11,11 @@ interface HappinessData {
     regional_indicator?: string
 }
 
-export function DashboardChart() {
+interface DashboardChartProps {
+    selectedYear?: number | null
+}
+
+export function DashboardChart({ selectedYear }: DashboardChartProps = {}) {
     const [chartData, setChartData] = React.useState<HappinessData[]>([])
     const [loading, setLoading] = React.useState(true)
     const [error, setError] = React.useState<string | null>(null)
@@ -20,11 +24,17 @@ export function DashboardChart() {
         const fetchData = async () => {
             try {
                 const supabase = createClient()
-                const { data, error: fetchError } = await supabase
+                let query = supabase
                     .from('world_happiness')
                     .select('country, happiness_score, year, regional_indicator')
                     .order('happiness_score', { ascending: false })
-                    .limit(20)
+
+                // Apply year filter if provided
+                if (selectedYear !== null && selectedYear !== undefined) {
+                    query = query.eq('year', selectedYear)
+                }
+
+                const { data, error: fetchError } = await query.limit(20)
 
                 if (fetchError) {
                     setError(fetchError.message)
@@ -43,7 +53,7 @@ export function DashboardChart() {
         }
 
         fetchData()
-    }, [])
+    }, [selectedYear])
 
     if (loading) {
         return (
@@ -117,9 +127,9 @@ export function DashboardChart() {
                         tick={{ fill: '#94a3b8', fontWeight: 500 }}
                     />
                     <Tooltip
-                        contentStyle={{ 
-                            backgroundColor: '#0a0e1a', 
-                            borderColor: '#1e293b', 
+                        contentStyle={{
+                            backgroundColor: '#0a0e1a',
+                            borderColor: '#1e293b',
                             color: '#f8fafc',
                             borderRadius: '12px',
                             boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.5)',

@@ -1,6 +1,9 @@
 'use client'
 
 import { DashboardChart } from "@/components/DashboardChart"
+import { YearSelector } from "@/components/YearSelector"
+import { GlassCard } from "@/components/ui/GlassCard"
+import { SectionHeader } from "@/components/ui/SectionHeader"
 import { createClient } from "@/utils/supabase/client"
 import React from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
@@ -8,13 +11,16 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function AnalyticsPage() {
     const [regionalData, setRegionalData] = React.useState<any[]>([])
     const [yearlyData, setYearlyData] = React.useState<any[]>([])
+    const [availableYears, setAvailableYears] = React.useState<number[]>([])
+    const [selectedYearTopCountries, setSelectedYearTopCountries] = React.useState<number | null>(2024)
+    const [selectedYearRegional, setSelectedYearRegional] = React.useState<number | null>(2024)
     const [loading, setLoading] = React.useState(true)
 
     React.useEffect(() => {
         const fetchAnalytics = async () => {
             try {
                 const supabase = createClient()
-                
+
                 // Fetch all data
                 const { data, error } = await supabase
                     .from('world_happiness')
@@ -28,29 +34,13 @@ export default function AnalyticsPage() {
                 }
 
                 if (data) {
-                    // Group by regional indicator
-                    const regionalMap = new Map<string, { count: number; totalScore: number }>()
-                    data.forEach((item) => {
-                        if (item.regional_indicator) {
-                            const existing = regionalMap.get(item.regional_indicator) || { count: 0, totalScore: 0 }
-                            regionalMap.set(item.regional_indicator, {
-                                count: existing.count + 1,
-                                totalScore: existing.totalScore + parseFloat(item.happiness_score?.toString() || '0'),
-                            })
-                        }
-                    })
+                    // Extract unique years
+                    const years = Array.from(new Set(data.map(item => item.year)))
+                        .filter(year => year !== null && year !== undefined)
+                        .sort((a, b) => b - a) // Sort descending
+                    setAvailableYears(years)
 
-                    const regional = Array.from(regionalMap.entries())
-                        .map(([region, stats]) => ({
-                            region,
-                            avgScore: stats.totalScore / stats.count,
-                            count: stats.count,
-                        }))
-                        .sort((a, b) => b.avgScore - a.avgScore)
-
-                    setRegionalData(regional)
-
-                    // Group by year
+                    // Group by year for yearly trend
                     const yearlyMap = new Map<number, { count: number; totalScore: number }>()
                     data.forEach((item) => {
                         if (item.year) {
@@ -82,6 +72,57 @@ export default function AnalyticsPage() {
         fetchAnalytics()
     }, [])
 
+    // Fetch regional data based on selected year
+    React.useEffect(() => {
+        const fetchRegionalData = async () => {
+            try {
+                const supabase = createClient()
+                let query = supabase
+                    .from('world_happiness')
+                    .select('*')
+
+                if (selectedYearRegional !== null) {
+                    query = query.eq('year', selectedYearRegional)
+                }
+
+                const { data, error } = await query
+
+                if (error) {
+                    console.error('Error:', error)
+                    return
+                }
+
+                if (data) {
+                    // Group by regional indicator
+                    const regionalMap = new Map<string, { count: number; totalScore: number }>()
+                    data.forEach((item) => {
+                        if (item.regional_indicator) {
+                            const existing = regionalMap.get(item.regional_indicator) || { count: 0, totalScore: 0 }
+                            regionalMap.set(item.regional_indicator, {
+                                count: existing.count + 1,
+                                totalScore: existing.totalScore + parseFloat(item.happiness_score?.toString() || '0'),
+                            })
+                        }
+                    })
+
+                    const regional = Array.from(regionalMap.entries())
+                        .map(([region, stats]) => ({
+                            region,
+                            avgScore: stats.totalScore / stats.count,
+                            count: stats.count,
+                        }))
+                        .sort((a, b) => b.avgScore - a.avgScore)
+
+                    setRegionalData(regional)
+                }
+            } catch (err) {
+                console.error('Error:', err)
+            }
+        }
+
+        fetchRegionalData()
+    }, [selectedYearRegional])
+
     return (
         <div className="space-y-8 animate-fade-in">
             <div className="space-y-2 pb-2">
@@ -92,26 +133,31 @@ export default function AnalyticsPage() {
                     Deep dive into regional trends and yearly patterns. Analyze happiness metrics across different dimensions.
                 </p>
             </div>
-            
-            <div className="p-6 glass card-hover rounded-2xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-cyan-600/0 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative z-10">
-                    <div className="mb-6">
-                        <h2 className="text-2xl font-bold text-slate-100 mb-1">Top Countries Analysis</h2>
-                        <p className="text-xs text-slate-500">Comprehensive breakdown of leading nations</p>
-                    </div>
-                    <DashboardChart />
-                </div>
-            </div>
+
+            <GlassCard hoverGradient="blue">
+                <SectionHeader
+                    title="Top Countries Analysis"
+                    description="Comprehensive breakdown of leading nations"
+                    selectedYear={selectedYearTopCountries}
+                    availableYears={availableYears}
+                    onYearChange={setSelectedYearTopCountries}
+                    loading={loading}
+                    showYearSelector
+                />
+                <DashboardChart selectedYear={selectedYearTopCountries} />
+            </GlassCard>
 
             <div className="grid gap-6 md:grid-cols-2">
-                <div className="p-6 glass card-hover rounded-2xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/0 via-cyan-600/0 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="relative z-10">
-                        <div className="mb-6">
-                            <h2 className="text-2xl font-bold text-slate-100 mb-1">Average Score by Region</h2>
-                            <p className="text-xs text-slate-500">Regional happiness distribution</p>
-                        </div>
+                <GlassCard hoverGradient="emerald">
+                    <SectionHeader
+                        title="Average Score by Region"
+                        description="Regional happiness distribution"
+                        selectedYear={selectedYearRegional}
+                        availableYears={availableYears}
+                        onYearChange={setSelectedYearRegional}
+                        loading={loading}
+                        showYearSelector
+                    />
                     {loading ? (
                         <div className="space-y-3">
                             {[...Array(10)].map((_, i) => (
@@ -121,15 +167,15 @@ export default function AnalyticsPage() {
                     ) : (
                         <div className="space-y-3">
                             {regionalData.slice(0, 10).map((item, index) => (
-                                <div 
-                                    key={item.region} 
+                                <div
+                                    key={item.region}
                                     className="flex items-center justify-between p-4 rounded-xl border border-slate-800/60 bg-gradient-to-r from-slate-800/20 to-slate-900/20 hover:from-slate-800/40 hover:to-slate-900/40 hover:border-slate-700/60 transition-all duration-300 group animate-slide-in-up"
                                     style={{ animationDelay: `${index * 50}ms` }}
                                 >
                                     <span className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors flex-1">{item.region}</span>
                                     <div className="flex items-center gap-4 flex-1 max-w-xs">
                                         <div className="flex-1 h-3.5 bg-slate-800/60 rounded-full overflow-hidden shadow-inner border border-slate-700/30">
-                                            <div 
+                                            <div
                                                 className="h-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_12px_rgba(16,185,129,0.6)] relative overflow-hidden"
                                                 style={{ width: `${(item.avgScore / 10) * 100}%` }}
                                             >
@@ -144,16 +190,13 @@ export default function AnalyticsPage() {
                             ))}
                         </div>
                     )}
-                    </div>
-                </div>
+                </GlassCard>
 
-                <div className="p-6 glass card-hover rounded-2xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-purple-600/0 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="relative z-10">
-                        <div className="mb-6">
-                            <h2 className="text-2xl font-bold text-slate-100 mb-1">Happiness Trend Over Years</h2>
-                            <p className="text-xs text-slate-500">Historical happiness progression</p>
-                        </div>
+                <GlassCard hoverGradient="purple">
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-slate-100 mb-1">Happiness Trend Over Years</h2>
+                        <p className="text-xs text-slate-500">Historical happiness progression</p>
+                    </div>
                     {loading ? (
                         <div className="h-[300px] shimmer rounded-lg" />
                     ) : yearlyData.length > 0 ? (
@@ -168,15 +211,15 @@ export default function AnalyticsPage() {
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.3} />
-                                    <XAxis 
-                                        dataKey="year" 
+                                    <XAxis
+                                        dataKey="year"
                                         stroke="#64748b"
                                         fontSize={12}
                                         tickLine={false}
                                         axisLine={false}
                                         tick={{ fill: '#94a3b8' }}
                                     />
-                                    <YAxis 
+                                    <YAxis
                                         stroke="#64748b"
                                         fontSize={12}
                                         domain={[0, 10]}
@@ -185,9 +228,9 @@ export default function AnalyticsPage() {
                                         tick={{ fill: '#94a3b8' }}
                                     />
                                     <Tooltip
-                                        contentStyle={{ 
-                                            backgroundColor: '#0f172a', 
-                                            borderColor: '#1e293b', 
+                                        contentStyle={{
+                                            backgroundColor: '#0f172a',
+                                            borderColor: '#1e293b',
                                             color: '#f8fafc',
                                             borderRadius: '12px',
                                             boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.5)',
@@ -196,12 +239,12 @@ export default function AnalyticsPage() {
                                         }}
                                         cursor={{ stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5 5', opacity: 0.5 }}
                                     />
-                                    <Legend 
+                                    <Legend
                                         wrapperStyle={{ color: '#cbd5e1', fontSize: '13px', fontWeight: '500' }}
                                     />
-                                    <Line 
-                                        type="monotone" 
-                                        dataKey="avgScore" 
+                                    <Line
+                                        type="monotone"
+                                        dataKey="avgScore"
                                         stroke="url(#lineGradient)"
                                         strokeWidth={4}
                                         name="Avg Happiness Score"
@@ -216,8 +259,7 @@ export default function AnalyticsPage() {
                             <p className="text-slate-400">No data available</p>
                         </div>
                     )}
-                    </div>
-                </div>
+                </GlassCard>
             </div>
         </div>
     )
