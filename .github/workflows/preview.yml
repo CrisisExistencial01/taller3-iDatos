@@ -1,18 +1,13 @@
 name: Preview Deploy
 on:
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches:
-        - develop
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_call:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: preview
+      url: ${{ steps.deploy-preview.outputs.deployment-url }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/shared
@@ -23,11 +18,14 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
-          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-          vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          bun x vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          bun x vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Preview
+        id: deploy-preview
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          url=$(bun x vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "deployment-url=$url" >> $GITHUB_OUTPUT
         if: github.ref != 'refs/heads/main'

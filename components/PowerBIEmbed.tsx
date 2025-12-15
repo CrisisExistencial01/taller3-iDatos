@@ -2,12 +2,14 @@ import React from 'react'
 
 interface PowerBIEmbedProps {
     embedUrl?: string
+    placeholderImage?: string
 }
 
-export function PowerBIEmbed({ embedUrl }: PowerBIEmbedProps) {
+export function PowerBIEmbed({ embedUrl, placeholderImage = "/images/report-placeholder.png" }: PowerBIEmbedProps) {
     return (
-        <div className="flex h-[600px] md:h-[700px] w-full flex-col overflow-hidden rounded-2xl glass-strong shadow-2xl">
-            <div className="border-b border-slate-800/60 bg-gradient-to-r from-slate-900/70 via-slate-800/50 to-slate-900/70 p-5 px-6 backdrop-blur-sm relative overflow-hidden">
+        <div className="flex h-[600px] md:h-[700px] w-full flex-col overflow-hidden rounded-2xl glass-strong shadow-2xl print:shadow-none print:rounded-none">
+            {/* Header: Ocultar al imprimir para limpiar el PDF */}
+            <div className="border-b border-slate-800/60 bg-gradient-to-r from-slate-900/70 via-slate-800/50 to-slate-900/70 p-5 px-6 backdrop-blur-sm relative overflow-hidden print:hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-cyan-600/5 to-emerald-600/5"></div>
                 <div className="flex items-center justify-between relative z-10">
                     <div>
@@ -20,28 +22,31 @@ export function PowerBIEmbed({ embedUrl }: PowerBIEmbedProps) {
                     </div>
                 </div>
             </div>
-            <div className="relative flex-1 bg-slate-950">
+
+            <div className="relative flex-1 bg-slate-950 print:bg-white">
                 {embedUrl ? (
-                    <iframe
-                        title="Power BI Report"
-                        width="100%"
-                        height="100%"
-                        src={embedUrl}
-                        frameBorder="0"
-                        allowFullScreen={true}
-                        className="absolute inset-0 h-full w-full transition-opacity duration-300"
-                        loading="lazy"
-                    />
+                    <>
+                        <iframe
+                            title="Power BI Report"
+                            width="100%"
+                            height="100%"
+                            src={embedUrl}
+                            frameBorder="0"
+                            allowFullScreen={true}
+                            className="absolute inset-0 h-full w-full transition-opacity duration-300 print:hidden"
+                            loading="lazy"
+                        />
+
+                        <img
+                            src={placeholderImage}
+                            alt="Static Report Capture"
+                            className="hidden print:block w-full h-auto object-contain"
+                        />
+                    </>
                 ) : (
-                    <div className="flex h-full items-center justify-center">
+                    <div className="flex h-full items-center justify-center print:hidden">
                         <div className="text-center space-y-2">
-                            <div className="h-12 w-12 mx-auto rounded-full bg-slate-800 flex items-center justify-center">
-                                <svg className="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                            </div>
                             <p className="text-slate-400 font-medium">No report URL provided</p>
-                            <p className="text-slate-500 text-sm">Please configure a Power BI embed URL</p>
                         </div>
                     </div>
                 )}
@@ -49,4 +54,3 @@ export function PowerBIEmbed({ embedUrl }: PowerBIEmbedProps) {
         </div>
     )
 }
-

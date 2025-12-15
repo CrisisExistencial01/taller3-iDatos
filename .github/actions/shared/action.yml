@@ -31,6 +31,4 @@ runs:
     shell: bash
     run: bun install
 
-  - name: Install Vercel CLI
-    shell: bash
-    run: npm i -g vercel@latest
+
