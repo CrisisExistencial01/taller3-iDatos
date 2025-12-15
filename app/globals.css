@@ -296,3 +296,47 @@ body {
   }
 }
 
+/* Print Styles - Optimized for Power BI Export */
+@media print {
+  /* Hide Sidebar and other non-essential elements */
+  aside, nav, header, footer, .sidebar, .print-hidden {
+    display: none !important;
+  }
+
+  /* Reset layout margins for full width */
+  main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  /* Ensure container takes full width */
+  .container {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide background images/colors to save ink and ensure clean PDF */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Force Power BI container to be visible and properly sized */
+  .glass-strong, .glass {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Ensure iframe is visible */
+  iframe {
+    display: block !important;
+    height: 100vh !important;
+    width: 100% !important;
+    position: static !important;
+  }
+}

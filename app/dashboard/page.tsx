@@ -33,6 +33,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = React.useState(true)
     const powerbiEmbedUrl = "https://app.powerbi.com/view?r=eyJrIjoiOWYwZDRkNjMtODVmZi00ODJkLTk0NmItYzcyOTYzNTkwOTZhIiwidCI6ImZjZDlhYmQ4LWRmY2QtNGExYS1iNzE5LThhMTNhY2ZkNWVkOSIsImMiOjR9";
 
+
     const top5CountriesByYear = (allData: any[], year: number | null) => {
         if (!year) return []
         return allData.filter(country => country.year === year)
@@ -142,7 +143,7 @@ export default function DashboardPage() {
                         Global happiness metrics and insights from around the world. Explore real-time data and discover patterns across countries and regions.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                     <YearSelector
                         selectedYear={selectedYearStats}
                         years={availableYears}
@@ -151,7 +152,6 @@ export default function DashboardPage() {
                     />
                 </div>
             </div>
-
 
             {/* Metrics Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -241,6 +241,8 @@ export default function DashboardPage() {
                     <PowerBIEmbed embedUrl={powerbiEmbedUrl} />
                 </div>
             </div>
+
         </div>
     )
 }
+
